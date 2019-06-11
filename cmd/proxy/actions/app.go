@@ -104,11 +104,6 @@ func App(conf *config.Config) (http.Handler, error) {
 		defer flushStats()
 	}
 
-	user, pass, ok := conf.BasicAuth()
-	if ok {
-		r.Use(basicAuth(user, pass))
-	}
-
 	if !conf.FilterOff() {
 		mf, err := module.NewFilter(conf.FilterFile)
 		if err != nil {
@@ -126,6 +121,12 @@ func App(conf *config.Config) (http.Handler, error) {
 	if subRouter != nil {
 		proxyRouter = subRouter
 	}
+
+	user, pass, ok := conf.BasicAuth()
+	if ok {
+		proxyRouter.Use(basicAuth(user, pass))
+	}
+
 	if err := addProxyRoutes(
 		proxyRouter,
 		store,
